@@ -18,7 +18,8 @@ for i_episode in range(2):
 
         time.sleep(0.05)
         observation, reward, done, info = env.step(action)
-        print(reward)
+        if reward != 0:
+            print(reward)
 
         if done:
             print("Episode finished after {} timesteps".format(t+1))

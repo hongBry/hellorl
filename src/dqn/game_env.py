@@ -23,7 +23,9 @@ class GameEnv(object):
         observation, reward, done, _ = self.gym_env.step(action)
         score = reward
         new_lives = self.gym_env.ale.lives()
+        reward = reward / 80
         reward = max(NEGATIVE_REWARD, min(POSITIVE_REWARD, reward))
+        reward += self.step_count * 0.0002
 
         if self.lives > new_lives:
             reward = NEGATIVE_REWARD

@@ -8,7 +8,7 @@ import time
 
 """experiment"""
 # PRE_TRAIN_MODEL_FILE = None
-PRE_TRAIN_MODEL_FILE = '/home/hongruying/hellorl/model/net_riverraid_dqn_20180912_140858_20180912_163614.model'
+PRE_TRAIN_MODEL_FILE = '/home/hongruying/hellorl2/model/net_riverraid_dqn_20180912_183210_20180912_234829.model'
 # PRE_TRAIN_MODEL_FILE = 'D:\\software_data\\seekloud\\hellorl\\model\\net_riverraid_dqn_20180912_140858_20180912_163614.model'
 EPOCH_NUM = 20
 EPOCH_LENGTH = 30000
@@ -37,7 +37,7 @@ if PRE_TRAIN_MODEL_FILE is not None:
 
 """q-learning"""
 DISCOUNT = 0.90
-EPSILON_MIN = 0.15
+EPSILON_MIN = 0.1
 EPSILON_START = 1.0
 EPSILON_DECAY = 100000
 if PRE_TRAIN_MODEL_FILE is not None:
