@@ -168,16 +168,16 @@ batch_size randomly chosen state transitions.
 
 def test1():
     rng = np.random.RandomState()
-    buff = ReplayBuffer(5, 3, rng, 20)
+    buff = ReplayBuffer(5, 3, 1, rng, 20)
 
     for i in range(12):
-        img = np.arange(i, i + 15, dtype=np.uint8).reshape(3, 5)
+        img = np.arange(i, i + 15, dtype=np.uint8).reshape(5, 3, 1)
         buff.add_sample(img, i, i + 0.1, False)
 
-    img = np.arange(100, 100 + 15, dtype=np.uint8).reshape(3, 5)
+    img = np.arange(100, 100 + 15, dtype=np.uint8).reshape(5, 3, 1)
     buff.add_sample(img, 100, 100 + 0.1, True)
 
-    imgs, actions, rewards, terminal, R = buff.random_batch(2)
+    imgs, actions, rewards, terminal = buff.random_batch(2)
 
     print('-------------------')
     print(buff.imgs)
@@ -202,7 +202,7 @@ def test1():
     print('-------------------')
     print(terminal)
     print('-------------------')
-    print(R)
+    # print(R)
 
 
 if __name__ == '__main__':

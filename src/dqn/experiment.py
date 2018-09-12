@@ -23,7 +23,7 @@ from src.dqn.config import *
 
 
 class Experiment(object):
-    ctx = utils.try_gpu(1)
+    ctx = utils.try_gpu(0)
 
     INPUT_SAMPLE = nd.random.uniform(0, 255, (1, PHI_LENGTH * CHANNEL, HEIGHT, WIDTH), ctx=ctx) / 255.0
 
@@ -142,4 +142,4 @@ def test():
 
 
 if __name__ == '__main__':
-    train()
+    test()

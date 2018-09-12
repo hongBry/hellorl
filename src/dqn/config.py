@@ -7,17 +7,17 @@
 import time
 
 """experiment"""
-PRE_TRAIN_MODEL_FILE = None
-# PRE_TRAIN_MODEL_FILE = '/home/zhangtao/model_file/hello_rl/net_dqn_20180904_162858_20180905_175454.model'
-# PRE_TRAIN_MODEL_FILE = 'D:\data\\rl\\model\\net_dqn_20180904_162858_20180905_172429.model'
-EPOCH_NUM = 360
+# PRE_TRAIN_MODEL_FILE = None
+PRE_TRAIN_MODEL_FILE = '/home/hongruying/hellorl/model/net_riverraid_dqn_20180912_140858_20180912_163614.model'
+# PRE_TRAIN_MODEL_FILE = 'D:\\software_data\\seekloud\\hellorl\\model\\net_riverraid_dqn_20180912_140858_20180912_163614.model'
+EPOCH_NUM = 20
 EPOCH_LENGTH = 30000
 RANDOM_SEED = int(time.time() * 1000) % 100000000
 
 """game env"""
-# GAME_NAME = 'riverraid'
-GAME_NAME = 'breakout'
-ACTION_NUM = 4
+GAME_NAME = 'riverraid'
+# GAME_NAME = 'breakout'
+ACTION_NUM = 18
 OBSERVATION_TYPE = 'image'  # image or ram
 CHANNEL = 3
 WIDTH = 160
@@ -50,7 +50,7 @@ UPDATE_TARGET_BY_EPISODE_BEGIN = 5
 UPDATE_TARGET_DECAY = 100  # update UPDATE_TARGET_DECAY times to get to UPDATE_TARGET_BY_EPISODE_END
 UPDATE_TARGET_RATE = (UPDATE_TARGET_BY_EPISODE_END - UPDATE_TARGET_BY_EPISODE_BEGIN) / UPDATE_TARGET_DECAY + 0.000001
 
-LEARNING_RATE = 0.005
+LEARNING_RATE = 0.0025
 WEIGHT_DECAY = 0.0
 # GRAD_CLIPPING_THETA = 0.01
 GRAD_CLIPPING_THETA = 0.01
@@ -59,8 +59,9 @@ POSITIVE_REWARD = 1
 NEGATIVE_REWARD = -1
 
 """OTHER"""
-MODEL_PATH = '/home/zhangtao/model_file/hello_rl'
-MODEL_FILE_MARK = 'bko_dqn_'
+# MODEL_PATH = '/home/zhangtao/model_file/hello_rl'
+MODEL_PATH = '/home/hongruying/hellorl/model'
+MODEL_FILE_MARK = 'riverraid_dqn_'
 BEGIN_TIME = time.strftime("%Y%m%d_%H%M%S")
 
 print('\n\n\n\n++++++++++++++++ edited time: 2018-09-05 18:17 ++++++++++++++++++')
