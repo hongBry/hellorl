@@ -17,11 +17,12 @@ class Player(object):
         self.epsilon_min = EPSILON_MIN
         self.epsilon_rate = (EPSILON_START - EPSILON_MIN) * 1.0 / EPSILON_DECAY
 
-    def run_episode(self, epoch, replay_buffer, render=False, random_action=False, testing=False):
+    def run_episode(self, epoch, replay_buffer, train_replay_buffer, render=False, random_action=False, testing=False):
         episode_step = 0
         episode_reword = 0
         train_count = 0
         loss_sum = 0
+        td_error_sum = 0
         episode_score = 0.0
         q_sum = 0.0
         q_count = 0
@@ -41,6 +42,9 @@ class Player(object):
                     q_count += 1
                     q_sum += max_q
             next_st, reward, episode_done, lives, score = self.game.step(action)
+            if episode_step >= PHI_LENGTH:
+                phi = replay_buffer.phi(st)
+                train_replay_buffer.add_sample(phi, action, reward, episode_done, next_st)
             terminal = episode_done
             replay_buffer.add_sample(st, action, reward, terminal)
             episode_step += 1
@@ -54,11 +58,17 @@ class Player(object):
                 self.game.render()
             if not testing and episode_step % TRAIN_PER_STEP == 0 and not random_action:
                 # print('-- train_policy_net episode_step=%d' % episode_step)
-                imgs, actions, rs, terminal = replay_buffer.random_batch(32)
-                loss = self.q_learning.train_policy_net(imgs, actions, rs, terminal)
+                imgs, actions, rs, terminal, tree_idx, IS_weight = train_replay_buffer.priority_sample(32)
+                # print('-- train_policy_net episode_step=%d get data' % episode_step)
+                loss, abs_error = self.q_learning.train_policy_net(imgs, actions, rs, terminal, IS_weight)
+                # print('-- train_policy_net episode_step=%d train finish' % episode_step)
+
+                train_replay_buffer.batch_update(tree_idx, abs_error)
                 loss_sum += loss
+                # print(abs_error.mean())
+                td_error_sum += abs_error.mean()
                 train_count += 1
-        return episode_step, episode_reword, episode_score, loss_sum / (train_count + 0.0000001), q_sum / (q_count + 0.0000001)
+        return episode_step, episode_reword, episode_score, loss_sum / (train_count + 0.0000001), q_sum / (q_count + 0.0000001), td_error_sum / (q_count + 0.0000001)
 
     def _choose_action(self, img, replay_buffer, testing):
         self.epsilon = max(self.epsilon_min, self.epsilon - self.epsilon_rate)

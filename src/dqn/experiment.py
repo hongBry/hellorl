@@ -12,6 +12,7 @@ from gym.envs.atari import AtariEnv
 from src.dqn.player import Player
 
 from src.dqn.game_env import GameEnv
+from src.dqn.reply_priority import ReplayPriorityBuffer
 from src.dqn.replay_buffer import ReplayBuffer
 from src.dqn.q_learning import QLearning
 from src import utils
@@ -51,7 +52,13 @@ class Experiment(object):
                                           WIDTH,
                                           CHANNEL,
                                           Experiment.rng,
-                                          BUFFER_MAX)
+                                          BUFFER_MAX,PHI_LENGTH)
+        self.train_replay_buffer = ReplayPriorityBuffer(HEIGHT,
+                                          WIDTH,
+                                          CHANNEL,
+                                          Experiment.rng,
+                                          BUFFER_MAX,PHI_LENGTH)
+
         self.update_target_episode = UPDATE_TARGET_BY_EPISODE_BEGIN
         self.update_target_interval = UPDATE_TARGET_BY_EPISODE_BEGIN + UPDATE_TARGET_RATE
         self.testing = testing
@@ -80,8 +87,9 @@ class Experiment(object):
             if self.step_count > BEGIN_RANDOM_STEP:
                 random_episode = False
             t0 = time.time()
-            ep_steps, ep_reward, ep_score, avg_loss, avg_max_q = self.player.run_episode(epoch,
+            ep_steps, ep_reward, ep_score, avg_loss, avg_max_q, avg_td_error = self.player.run_episode(epoch,
                                                                                          self.replay_buffer,
+                                                                                         self.train_replay_buffer,
                                                                                          render=render,
                                                                                          random_action=random_episode,
                                                                                          testing=self.testing)
@@ -97,8 +105,8 @@ class Experiment(object):
             t1 = time.time()
 
             print(
-                'episode [%d], episode step=%d, total_step=%d, time=%fs, score=%.2f, ep_reward=%.2f, avg_loss=%.4f, avg_q=%f'
-                % (self.episode_count, ep_steps, self.step_count, (t1 - t0), ep_score, ep_reward, avg_loss, avg_max_q))
+                'episode [%d], episode step=%d, total_step=%d, time=%fs, score=%.2f, ep_reward=%.2f, avg_loss=%.4f, avg_q=%f, avg_td_error=%.6f'
+                % (self.episode_count, ep_steps, self.step_count, (t1 - t0), ep_score, ep_reward, avg_loss, avg_max_q, avg_td_error))
             print('')
             self._update_target_net(random_episode)
 

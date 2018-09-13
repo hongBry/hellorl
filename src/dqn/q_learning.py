@@ -51,7 +51,7 @@ class QLearning(object):
         max_q = out[0, action].asscalar()
         return action, max_q
 
-    def train_policy_net(self, imgs, actions, rs, terminals):
+    def train_policy_net(self, imgs, actions, rs, terminals, IS_weight):
         """
         Train one batch.
 
@@ -82,11 +82,16 @@ class QLearning(object):
         next_qs = self.target_net(st1)
         next_q_out = nd.max(next_qs, axis=1)
         target = rt + next_q_out * (1.0 - tt) * DISCOUNT
+        IS_weight = nd.array(IS_weight, ctx=self.ctx, dtype=np.float32)
 
         with autograd.record():
             current_qs = self.policy_net(st)
             current_q = nd.pick(current_qs, at, 1)
+            dif = current_q - target
+
+            abs_errors = nd.abs(current_q - target)
             loss = self.loss_func(target, current_q)
+            loss = loss * IS_weight
             # diff = nd.abs(current_q - target)
             # quadratic_part = nd.clip(diff, -1, 1)
             # loss = 0.5 * nd.sum(nd.square(quadratic_part)) + nd.sum(diff - quadratic_part)
@@ -99,6 +104,8 @@ class QLearning(object):
 
         loss.backward()
 
+
+
         # 梯度裁剪
         if GRAD_CLIPPING_THETA is not None:
             params = [p.data() for p in self.policy_net.collect_params().values()]
@@ -106,7 +113,8 @@ class QLearning(object):
 
         self.trainer.step(batch_size)
         total_loss = loss.mean().asscalar()
-        return total_loss
+        # print(abs_errors.mean().asscalar(),total_loss)
+        return total_loss, abs_errors.asnumpy()
 
     def q_vals(self, sample_batch):
         pass

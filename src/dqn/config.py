@@ -7,10 +7,10 @@
 import time
 
 """experiment"""
-# PRE_TRAIN_MODEL_FILE = None
-# PRE_TRAIN_MODEL_FILE = '/home/hongruying/hellorl2/model/net_riverraid_dqn_20180912_183210_20180912_234829.model'
-PRE_TRAIN_MODEL_FILE = 'D:\\software_data\\seekloud\\hellorl\\model\\net_riverraid_dqn_20180913_002225_20180913_111116.model'
-EPOCH_NUM = 20
+PRE_TRAIN_MODEL_FILE = None
+# PRE_TRAIN_MODEL_FILE = '/home/hongruying/hellorl2/model/net_riverraid_dqn_20180913_002225_20180913_111116.model'
+# PRE_TRAIN_MODEL_FILE = 'D:\\software_data\\seekloud\\hellorl\\model\\net_riverraid_dqn_20180913_002225_20180913_111116.model'
+EPOCH_NUM = 1
 EPOCH_LENGTH = 30000
 RANDOM_SEED = int(time.time() * 1000) % 100000000
 
@@ -29,8 +29,8 @@ TRAIN_PER_STEP = 4
 
 """replay buffer"""
 PHI_LENGTH = 4
-BUFFER_MAX = 100000
-# BUFFER_MAX = 200000
+BUFFER_MAX = 1024
+# BUFFER_MAX = 65536
 BEGIN_RANDOM_STEP = 1000
 if PRE_TRAIN_MODEL_FILE is not None:
     BEGIN_RANDOM_STEP = 100
@@ -60,7 +60,7 @@ NEGATIVE_REWARD = -1
 
 """OTHER"""
 # MODEL_PATH = '/home/zhangtao/model_file/hello_rl'
-MODEL_PATH = '/home/hongruying/hellorl/model'
+MODEL_PATH = '/home/hongruying/hellorl2/model'
 MODEL_FILE_MARK = 'riverraid_dqn_'
 BEGIN_TIME = time.strftime("%Y%m%d_%H%M%S")
 
