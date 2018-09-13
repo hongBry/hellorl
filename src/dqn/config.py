@@ -8,8 +8,8 @@ import time
 
 """experiment"""
 # PRE_TRAIN_MODEL_FILE = None
-PRE_TRAIN_MODEL_FILE = '/home/hongruying/hellorl2/model/net_riverraid_dqn_20180912_183210_20180912_234829.model'
-# PRE_TRAIN_MODEL_FILE = 'D:\\software_data\\seekloud\\hellorl\\model\\net_riverraid_dqn_20180912_140858_20180912_163614.model'
+# PRE_TRAIN_MODEL_FILE = '/home/hongruying/hellorl2/model/net_riverraid_dqn_20180912_183210_20180912_234829.model'
+PRE_TRAIN_MODEL_FILE = 'D:\\software_data\\seekloud\\hellorl\\model\\net_riverraid_dqn_20180913_002225_20180913_111116.model'
 EPOCH_NUM = 20
 EPOCH_LENGTH = 30000
 RANDOM_SEED = int(time.time() * 1000) % 100000000
