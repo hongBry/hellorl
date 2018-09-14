@@ -17,7 +17,7 @@ class Player(object):
         self.epsilon_min = EPSILON_MIN
         self.epsilon_rate = (EPSILON_START - EPSILON_MIN) * 1.0 / EPSILON_DECAY
 
-    def run_episode(self, epoch, replay_buffer, render=False, random_action=False, testing=False):
+    def run_episode(self, epoch, replay_buffer, last_avg_step, render=False, random_action=False, testing=False):
         episode_step = 0
         episode_reword = 0
         train_count = 0
@@ -36,7 +36,7 @@ class Player(object):
             if not testing and random_action:
                 action = self.game.random_action()
             else:
-                action, max_q = self._choose_action(st, replay_buffer, testing)
+                action, max_q = self._choose_action(st, replay_buffer, testing, last_avg_step < episode_step and last_avg_step != 0)
                 if max_q is not None:
                     q_count += 1
                     q_sum += max_q
@@ -60,8 +60,10 @@ class Player(object):
                 train_count += 1
         return episode_step, episode_reword, episode_score, loss_sum / (train_count + 0.0000001), q_sum / (q_count + 0.0000001)
 
-    def _choose_action(self, img, replay_buffer, testing):
+    def _choose_action(self, img, replay_buffer, testing, is_over_avg_step):
         self.epsilon = max(self.epsilon_min, self.epsilon - self.epsilon_rate)
+        if not testing and NEED_EXPLORE_FUTURE and is_over_avg_step:
+            self.epsilon = NEED_EXPLORE_EPSILON_MAX
         max_q = None
 
         if not testing and self.rng.rand() < self.epsilon:

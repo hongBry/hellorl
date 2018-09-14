@@ -30,6 +30,7 @@ class Experiment(object):
     mx.random.seed(RANDOM_SEED)
     rng = np.random.RandomState(RANDOM_SEED)
 
+
     def __init__(self, testing=False):
         ztutils.mkdir_if_not_exist(MODEL_PATH)
         self.step_count = 0
@@ -76,15 +77,16 @@ class Experiment(object):
         step_in_epoch = 0
         reward_in_epoch = 0.0
         score_in_epoch = 0.0
+        last_avg_step = 0
         while steps_left > 0:
             if self.step_count > BEGIN_RANDOM_STEP:
                 random_episode = False
             t0 = time.time()
             ep_steps, ep_reward, ep_score, avg_loss, avg_max_q = self.player.run_episode(epoch,
                                                                                          self.replay_buffer,
+                                                                                         last_avg_step= last_avg_step,
                                                                                          render=render,
-                                                                                         random_action=random_episode,
-                                                                                         testing=self.testing)
+                                                                                         random_action=random_episode)
 
             self.step_count += ep_steps
             if not random_episode:
@@ -94,6 +96,8 @@ class Experiment(object):
                 step_in_epoch += ep_steps
                 reward_in_epoch += ep_reward
                 steps_left -= ep_steps
+                last_avg_step = step_in_epoch // episode_in_epoch
+
             t1 = time.time()
 
             print(
