@@ -8,7 +8,7 @@ import time
 
 """experiment"""
 # PRE_TRAIN_MODEL_FILE = None
-PRE_TRAIN_MODEL_FILE = '/home/hongruying/hellorl/model/net_riverraid_dqn_20180913_114753_20180914_094155.model'
+PRE_TRAIN_MODEL_FILE = '/home/hongruying/hellorl/model/net_riverraid_dqn_20180914_121323_20180914_161558.model'
 # PRE_TRAIN_MODEL_FILE = 'D:\\software_data\\seekloud\\hellorl\\model\\net_riverraid_dqn_20180913_114753_20180914_094155.model'
 EPOCH_NUM = 100
 EPOCH_LENGTH = 30000
