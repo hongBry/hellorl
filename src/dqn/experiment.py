@@ -53,11 +53,13 @@ class Experiment(object):
                                           CHANNEL,
                                           Experiment.rng,
                                           BUFFER_MAX,PHI_LENGTH)
-        self.train_replay_buffer = ReplayPriorityBuffer(HEIGHT,
-                                          WIDTH,
-                                          CHANNEL,
-                                          Experiment.rng,
-                                          BUFFER_MAX,PHI_LENGTH)
+        self.train_replay_buffer = None
+        if REPLAY_PRIORITY:
+            self.train_replay_buffer = ReplayPriorityBuffer(HEIGHT,
+                                                            WIDTH,
+                                                            CHANNEL,
+                                                            Experiment.rng,
+                                                            BUFFER_MAX, PHI_LENGTH)
 
         self.update_target_episode = UPDATE_TARGET_BY_EPISODE_BEGIN
         self.update_target_interval = UPDATE_TARGET_BY_EPISODE_BEGIN + UPDATE_TARGET_RATE

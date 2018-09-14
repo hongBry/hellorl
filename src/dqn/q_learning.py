@@ -79,34 +79,34 @@ class QLearning(object):
         tt = nd.array(terminals[:, 0], ctx=self.ctx)
         st1 = nd.array(next_states, ctx=self.ctx, dtype=np.float32) / 255.0
 
-        next_p_qs = self.policy_net(st1)
-        next_action = nd.argmax(next_p_qs, axis= 1)
+
 
         next_qs = self.target_net(st1)
-        # next_q_out = nd.max(next_qs, axis=1)
-        next_q_out = nd.pick(next_qs,next_action,axis= 1)
+        if DOUBLE_DQN:
+            # print('use double dqn to train')
+            next_p_qs = self.policy_net(st1)
+            next_action = nd.argmax(next_p_qs, axis=1)
+            next_q_out = nd.pick(next_qs, next_action, axis=1)
+        else:
+            # print('not use double dqn to train')
+            next_q_out = nd.max(next_qs, axis=1)
+
         target = rt + next_q_out * (1.0 - tt) * DISCOUNT
-        IS_weight = nd.array(IS_weight, ctx=self.ctx, dtype=np.float32)
-
-        with autograd.record():
-            current_qs = self.policy_net(st)
-            current_q = nd.pick(current_qs, at, 1)
-            dif = current_q - target
-
-            abs_errors = nd.abs(current_q - target)
-            loss = self.loss_func(target, current_q)
-            loss = loss * IS_weight
-            # diff = nd.abs(current_q - target)
-            # quadratic_part = nd.clip(diff, -1, 1)
-            # loss = 0.5 * nd.sum(nd.square(quadratic_part)) + nd.sum(diff - quadratic_part)
-
-            # print('current_qs', current_qs)
-            # print('current_q', current_q)
-            # print('diff', diff)
-            # print('quadratic_part', quadratic_part)
-            # print('loss', loss)
-
-        loss.backward()
+        if REPLAY_PRIORITY:
+            IS_weight = nd.array(IS_weight, ctx=self.ctx, dtype=np.float32)
+            with autograd.record():
+                current_qs = self.policy_net(st)
+                current_q = nd.pick(current_qs, at, 1)
+                abs_errors = nd.abs(current_q - target)
+                loss = self.loss_func(target, current_q)
+                loss = loss * IS_weight
+            loss.backward()
+        else:
+            with autograd.record():
+                current_qs = self.policy_net(st)
+                current_q = nd.pick(current_qs, at, 1)
+                loss = self.loss_func(target, current_q)
+            loss.backward()
 
 
 
@@ -118,7 +118,11 @@ class QLearning(object):
         self.trainer.step(batch_size)
         total_loss = loss.mean().asscalar()
         # print(abs_errors.mean().asscalar(),total_loss)
-        return total_loss, abs_errors.asnumpy()
+        if REPLAY_PRIORITY:
+            return total_loss, abs_errors.asnumpy()
+        else:
+            return total_loss
+
 
     def q_vals(self, sample_batch):
         pass

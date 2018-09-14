@@ -42,7 +42,7 @@ class Player(object):
                     q_count += 1
                     q_sum += max_q
             next_st, reward, episode_done, lives, score = self.game.step(action)
-            if episode_step >= PHI_LENGTH:
+            if REPLAY_PRIORITY and episode_step >= PHI_LENGTH:
                 phi = replay_buffer.phi(st)
                 train_replay_buffer.add_sample(phi, action, reward, episode_done, next_st)
             terminal = episode_done
@@ -58,15 +58,19 @@ class Player(object):
                 self.game.render()
             if not testing and episode_step % TRAIN_PER_STEP == 0 and not random_action:
                 # print('-- train_policy_net episode_step=%d' % episode_step)
-                imgs, actions, rs, terminal, tree_idx, IS_weight = train_replay_buffer.priority_sample(32)
-                # print('-- train_policy_net episode_step=%d get data' % episode_step)
-                loss, abs_error = self.q_learning.train_policy_net(imgs, actions, rs, terminal, IS_weight)
-                # print('-- train_policy_net episode_step=%d train finish' % episode_step)
-
-                train_replay_buffer.batch_update(tree_idx, abs_error)
+                if REPLAY_PRIORITY:
+                    # print('-- train_policy_net episode_step=%d' % episode_step)
+                    imgs, actions, rs, terminal, tree_idx, IS_weight = train_replay_buffer.priority_sample(32)
+                    loss, abs_error = self.q_learning.train_policy_net(imgs, actions, rs, terminal, IS_weight)
+                    train_replay_buffer.batch_update(tree_idx, abs_error)
+                    td_error_sum += abs_error.mean()
+                else:
+                    # print('-- train_policy_net episode_step=%d' % episode_step)
+                    imgs, actions, rs, terminal = replay_buffer.random_batch(32)
+                    loss = self.q_learning.train_policy_net(imgs, actions, rs, terminal, None)
                 loss_sum += loss
-                # print(abs_error.mean())
-                td_error_sum += abs_error.mean()
+
+
                 train_count += 1
         return episode_step, episode_reword, episode_score, loss_sum / (train_count + 0.0000001), q_sum / (q_count + 0.0000001), td_error_sum / (q_count + 0.0000001)
 
