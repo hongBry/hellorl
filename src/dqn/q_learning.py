@@ -79,8 +79,12 @@ class QLearning(object):
         tt = nd.array(terminals[:, 0], ctx=self.ctx)
         st1 = nd.array(next_states, ctx=self.ctx, dtype=np.float32) / 255.0
 
+        next_p_qs = self.policy_net(st1)
+        next_action = nd.argmax(next_p_qs, axis= 1)
+
         next_qs = self.target_net(st1)
-        next_q_out = nd.max(next_qs, axis=1)
+        # next_q_out = nd.max(next_qs, axis=1)
+        next_q_out = nd.pick(next_qs,next_action,axis= 1)
         target = rt + next_q_out * (1.0 - tt) * DISCOUNT
         IS_weight = nd.array(IS_weight, ctx=self.ctx, dtype=np.float32)
 
