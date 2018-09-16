@@ -10,6 +10,7 @@ from mxnet.gluon import data as gdata, nn, loss as gloss
 import time
 import src.utils as g_utils
 from src.dqn.config import *
+from src.dqn.dueling_dqn_network import DDQN_Network
 
 
 class QLearning(object):
@@ -20,7 +21,8 @@ class QLearning(object):
 
         if model_file is not None:
             print('%s: read trained model from [%s]' % (time.strftime("%Y-%m-%d %H:%M:%S"), model_file))
-            self.policy_net.load_params(model_file, ctx=self.ctx)
+            self.policy_net.load_parameters(model_file, ctx=self.ctx)
+            # self.policy_net.load_params(model_file, ctx=self.ctx)
 
         self.update_target_net()
 
@@ -130,20 +132,24 @@ class QLearning(object):
     def save_params_to_file(self, model_path, mark):
         time_mark = time.strftime("%Y%m%d_%H%M%S")
         filename = model_path + '/net_' + str(mark) + '_' + time_mark + '.model'
-        self.policy_net.save_params(filename)
+        # self.policy_net.save_params(filename)
+        self.policy_net.save_parameters(filename)
         print(time.strftime("%Y-%m-%d %H:%M:%S"), ' save model success:', filename)
 
     def get_net(self, action_num, input_sample):
-        net = nn.Sequential()
-        with net.name_scope():
-            net.add(
-                nn.Conv2D(channels=32, kernel_size=8, strides=4, activation='relu'),
-                nn.Conv2D(channels=64, kernel_size=4, strides=2, activation='relu'),
-                nn.Conv2D(channels=64, kernel_size=3, strides=1, activation='relu'),
-                nn.Flatten(),
-                nn.Dense(512, activation="relu"),
-                nn.Dense(action_num)
-            )
+        if DUELING_DQN:
+            net = DDQN_Network(action_num)
+        else:
+            net = nn.Sequential()
+            with net.name_scope():
+                net.add(
+                    nn.Conv2D(channels=32, kernel_size=8, strides=4, activation='relu'),
+                    nn.Conv2D(channels=64, kernel_size=4, strides=2, activation='relu'),
+                    nn.Conv2D(channels=64, kernel_size=3, strides=1, activation='relu'),
+                    nn.Flatten(),
+                    nn.Dense(512, activation="relu"),
+                    nn.Dense(action_num)
+                )
         net.initialize(init.Xavier(), ctx=self.ctx)
         net(input_sample)
         return net

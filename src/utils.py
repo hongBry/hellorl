@@ -307,6 +307,7 @@ def grad_clipping(params, clipping_norm, ctx):
         norm = nd.sqrt(norm).asscalar()
         if norm > clipping_norm:
             for p in params:
+                # print(p.grad)
                 p.grad[:] *= clipping_norm / norm
 
 

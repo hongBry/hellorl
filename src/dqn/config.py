@@ -87,6 +87,11 @@ GRAD_CLIPPING_THETA = dqn_conf.getfloat('GRAD_CLIPPING_THETA')
 POSITIVE_REWARD = dqn_conf.getfloat('POSITIVE_REWARD')
 NEGATIVE_REWARD = dqn_conf.getfloat('NEGATIVE_REWARD')
 
+if PRE_TRAIN_MODEL_FILE is not None:
+    EPSILON_MIN = 0.15
+    EPSILON_START = 0.2
+    EPSILON_DECAY = 200
+
 """OTHER"""
 MODEL_PATH = dqn_conf.get('MODEL_PATH')
 MODEL_FILE_MARK = dqn_conf.get('MODEL_FILE_MARK')
@@ -95,11 +100,16 @@ BEGIN_TIME = time.strftime("%Y%m%d_%H%M%S")
 EDITED_TIME = dqn_conf.get("EDITED_TIME")
 REPLAY_PRIORITY = dqn_conf.getboolean("REPLAY_PRIORITY")
 DOUBLE_DQN = dqn_conf.getboolean('DOUBLE_DQN')
+DUELING_DQN = dqn_conf.getboolean('DUELING_DQN')
 
 print('\n\n\n\n++++++++++++++++ config edited time: %s ++++++++++++++++++' % EDITED_TIME)
 print('BEGIN_TIME:', BEGIN_TIME)
 print('CONF FILE:', customer_conf_file)
 print('GAME_NAME:', GAME_NAME)
+print('EPSILON_MIN:', EPSILON_MIN)
+print('EPSILON_START:', EPSILON_START)
+print('EPSILON_DECAY:', EPSILON_DECAY)
+
 print('--------------------------')
 
 print('configuration:')
