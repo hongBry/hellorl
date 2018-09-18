@@ -53,3 +53,14 @@ class GameEnv(object):
 
     def close(self):
         self.gym_env.close()
+
+    # preprocessing function only for pong
+    def prepro(self, img):  # where I is the single frame of the game as the input
+        """ prepro 210x160x3 uint8 frame into 6400 (80x80) 1D float vector """
+        # the values below have been precomputed through trail and error by OpenAI team members
+        img = img[35:195]  # cropping the image frame to an extent where it contains on the paddles and ball and area between them
+        img = img[::2, ::2, 0]  # downsample by the factor of 2 and take only the R of the RGB channel.Therefore, now 2D frame
+        img[img == 144] = 0  # erase background type 1
+        img[img == 109] = 0  # erase background type 2
+        img[img != 0] = 1  # everything else(other than paddles and ball) set to 1
+        return img.astype('float').ravel()  # flattening to 1D

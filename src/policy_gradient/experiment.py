@@ -19,9 +19,10 @@ from src.policy_gradient.policy_network import PolicyGradient
 
 class Experiment(object):
     ctx = utils.try_gpu(GPU_INDEX)
-
-    INPUT_SAMPLE = nd.random.uniform(0, 255, (1, PHI_LENGTH * CHANNEL, HEIGHT, WIDTH), ctx=ctx) / 255.0
-
+    if PREPRO_STATE:
+        INPUT_SAMPLE = nd.random.uniform(0, 255, (1, 1, PREPRO_HEIGHT, PREPRO_WIDTH), ctx=ctx) / 255.0
+    else:
+        INPUT_SAMPLE = nd.random.uniform(0, 255, (1, PHI_LENGTH * CHANNEL, HEIGHT, WIDTH), ctx=ctx) / 255.0
     mx.random.seed(RANDOM_SEED)
     rng = np.random.RandomState(RANDOM_SEED)
 
@@ -39,7 +40,10 @@ class Experiment(object):
         self.player = Player(self.game,
                              self.policy_network,
                              Experiment.rng)
-        self.recorder_buffer = RecorderBuffer(HEIGHT, WIDTH, CHANNEL, PHI_LENGTH)
+        if PREPRO_STATE:
+            self.recorder_buffer = RecorderBuffer(PREPRO_HEIGHT, PREPRO_WIDTH, PREPRO_CHANNEL, PHI_LENGTH)
+        else:
+            self.recorder_buffer = RecorderBuffer(HEIGHT, WIDTH, CHANNEL, PHI_LENGTH)
         self.testing = testing
 
     def start_train(self):

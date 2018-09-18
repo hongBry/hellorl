@@ -6,6 +6,8 @@
 
 import numpy as np
 from src.policy_gradient.config import *
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 
 class Player(object):
     def __init__(self, game, policy_gradient, rng):
@@ -39,6 +41,10 @@ class Player(object):
 
             next_st, reward, episode_done, lives, score = self.game.step(fake_action)
             terminal = episode_done
+            if True:
+                st = self.game.prepro(st)
+                st = np.array(st).reshape((PREPRO_HEIGHT, PREPRO_WIDTH, PREPRO_CHANNEL))
+
             recorder_buffer.add_sample(st, action, reward, terminal)
             if episode_step >= no_op_steps:
                 episode_reword += reward
@@ -50,40 +56,31 @@ class Player(object):
 
             if render:
                 self.game.render()
+                time.sleep(0.05)
 
         if not testing:
             avg_loss, train_count = self._learn(recorder_buffer)
         return episode_step - no_op_steps, episode_reword, episode_score, avg_loss, train_count
 
     def _choose_action(self, img, recorder_buffer, testing):
-        # self.epsilon = 0.2
-        #
-        #
-        # if not testing and self.rng.rand() < self.epsilon:
-        #     action = self.rng.randint(0, self.action_num)
-        # else:
+        if PREPRO_STATE:
+            img = self.game.prepro(img).reshape((PREPRO_HEIGHT, PREPRO_WIDTH, PREPRO_CHANNEL))
+
+        # if testing:
+        #     imgs = img.reshape((PREPRO_HEIGHT,PREPRO_WIDTH))
+        #     plt.imshow(imgs, cmap=cm.gray)
+        #     plt.show()
         phi = recorder_buffer.phi(img)
-        action_prop = self.policy_gradient.choose_action(phi)
-        action_prop = action_prop.asnumpy()
-        # print(action_prop)
-        action = self.rng.choice(range(len(action_prop.ravel())), p=action_prop.ravel())
+        up_probability = self.policy_gradient.choose_action(phi)[0]
+        if np.random.uniform() < up_probability:
+            action = 0
+        else:
+            action = 1
 
         return action
 
     def _learn(self, recorder_buffer):
-        batch_data = recorder_buffer.data_iter(32)
-        loss_sum = 0
-        loss_count = 0
-        last_state = None
-        for state, actions, rewards, Rs in batch_data:
-            loss = self.policy_gradient.train(state, actions, rewards, Rs)
-            loss_sum += loss
-            loss_count += 1
-            # if last_state is not None:
-                # x = np.equal(last_state, state)
-                # x = x.astype(dtype=np.int32)
-                # y = np.ones_like(x)
-                # print(y.sum() - x.sum())
-                # print(actions.sum())
-            # last_state = state
+        # recorder_buffer.size - recorder_buffer.start_mark is all data of one eposide
+        batch_data = recorder_buffer.data_iter(recorder_buffer.size - recorder_buffer.start_mark)
+        loss_sum, loss_count = self.policy_gradient.train(batch_data)
         return loss_sum / (loss_count + 0.0000001), loss_count

@@ -1,6 +1,6 @@
 import numpy as np
 from mxnet.gluon import nn
-from mxnet import init, nd
+from mxnet import init, nd, autograd
 import mxnet as mx
 
 
@@ -37,5 +37,13 @@ def get_net():
 
 
 
+import time
 if __name__ == '__main__':
-    get_net()
+    array = nd.array([[0.1,0.4,0.5], [0.2,0.3,0.5]])
+    print(np.log(0.2))
+    mx.random.seed(int(time.time()))
+
+    print(array)
+    action, value = nd.sample_multinomial(array, get_prob=True)
+    print(action)
+    print(value)

@@ -5,7 +5,7 @@ env_name = "CartPole-v0"
 
 env_name = "Riverraid-v0"
 
-env_name = "Pong-v0"
+env_name = "Pendulum-v0"
 
 
 env = gym.make(env_name)
@@ -22,7 +22,7 @@ for i_episode in range(2):
 
 
         time.sleep(0.05)
-        observation, reward, done, info = env.step(3)
+        observation, reward, done, info = env.step(action)
         count += 1
         # print(observation.shape)
         if reward != 0:

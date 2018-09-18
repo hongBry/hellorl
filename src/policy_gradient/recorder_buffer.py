@@ -69,7 +69,7 @@ class RecorderBuffer(object):
 
             count = 0
             for index in range(i, end):
-                all_indexs = np.arange(index - PHI_LENGTH + 1, index + 1)
+                all_indexs = np.arange(index - self.phi_length + 1, index + 1)
                 states[count] = imgs.take(all_indexs, axis=0, mode='wrap')
                 actions[count] = self.episode_actions[index]
                 rewards[count] = self.episode_rewards[index]

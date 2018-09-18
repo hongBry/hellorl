@@ -12,7 +12,7 @@ from gym.envs.atari import AtariEnv
 from src.dqn.player import Player
 
 from src.dqn.game_env import GameEnv
-from src.dqn.reply_priority import ReplayPriorityBuffer
+from src.dqn.replay_priority import ReplayPriorityBuffer
 from src.dqn.replay_buffer import ReplayBuffer
 from src.dqn.q_learning import QLearning
 from src import utils

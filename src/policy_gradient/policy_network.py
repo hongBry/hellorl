@@ -20,32 +20,38 @@ class PolicyGradient(object):
 
         self.trainer = gluon.Trainer(self.policy_net.collect_params(), OPTIMIZER,
                                      {'learning_rate': LEARNING_RATE,
-                                      'wd': WEIGHT_DECAY,
-                                      'gamma1': GAMMA1})
+                                      'wd': WEIGHT_DECAY})
         self.loss_func = gluon.loss.SoftmaxCrossEntropyLoss()
 
     def choose_action(self, state):
         shape0 = state.shape
-        state = nd.array(state, ctx=self.ctx).reshape((1, -1, shape0[-2], shape0[-1]))
+        # print(shape0)
+        state = nd.array(state, ctx=self.ctx, dtype=np.float32).reshape((1, -1, shape0[-2], shape0[-1]))
+        if PREPRO_STATE:
+            last = state[:, 0, :, :]
+            cur = state[:, 1, :, :]
+            state = cur - last
+        else:
+            state = state / 255.0
         out = self.policy_net(state)
-        action_prop = nd.softmax(out, axis=1)
-        return action_prop
+        up_probability = nd.softmax(out, axis=1)[0][0]
+        return up_probability
 
     def get_net(self, action_num, input_sample):
         net = gluon.nn.Sequential()
         with net.name_scope():
+            net.add(
+                gluon.nn.Dense(200, activation="relu"),
+                gluon.nn.Dense(action_num)
+            )
             # net.add(
-            #     gluon.nn.Dense(256, activation="relu"),
+            #     gluon.nn.Conv2D(channels=32, kernel_size=8, strides=4, activation='relu'),
+            #     gluon.nn.Conv2D(channels=64, kernel_size=4, strides=2, activation='relu'),
+            #     gluon.nn.Conv2D(channels=64, kernel_size=3, strides=1, activation='relu'),
+            #     gluon.nn.Flatten(),
+            #     gluon.nn.Dense(512, activation="relu"),
             #     gluon.nn.Dense(action_num, activation="sigmoid")
             # )
-            net.add(
-                gluon.nn.Conv2D(channels=32, kernel_size=8, strides=4, activation='relu'),
-                gluon.nn.Conv2D(channels=64, kernel_size=4, strides=2, activation='relu'),
-                gluon.nn.Conv2D(channels=64, kernel_size=3, strides=1, activation='relu'),
-                gluon.nn.Flatten(),
-                gluon.nn.Dense(512, activation="relu"),
-                gluon.nn.Dense(action_num, activation="sigmoid")
-            )
         net.initialize(init.Xavier(), ctx=self.ctx)
         net(input_sample)
         return net
@@ -56,43 +62,35 @@ class PolicyGradient(object):
         self.policy_net.save_parameters(filename)
         print(time.strftime("%Y-%m-%d %H:%M:%S"), ' save model success:', filename)
 
-    def train(self, imgs, actions, rs, Rs):
-        '''
-        Train one batch.
-        :param imgs: b x f x C x H x W numpy array, where b is batch size,
-               f is num frames, h is height and w is width.
-        :param actions: b x 1 numpy array of integers
-        :param rs: b x 1 numpy array
-        :param Rs: b x 1 numpy array
-        :return: average loss
-        '''
-        batch_size = actions.shape[0]
-        s = imgs.shape
-        states = imgs.reshape((s[0], -1, s[-2], s[-1]))  # batch x (f x C) x H x W
-
-        st = nd.array(states, ctx=self.ctx, dtype=np.float32) / 255.0
-        at = nd.array(actions[:, 0], ctx=self.ctx)
-
-        Rt = nd.array(Rs[:, 0], ctx=self.ctx)
-        # print(at)
-
-        labels = at.reshape(shape=(batch_size,))
-
-
-
+    def train(self, batch_data):
+        loss_sum = 0
         with autograd.record():
-            logits = self.policy_net(st)
-            # print(nd.softmax(logits, axis=1))
-            loss = self.loss_func(logits, labels)
-            loss = Rt * loss
-            # print(loss.sum().asscalar())
+            final_nodes = []
+            step = 0
+            for imgs, actions, rewards, Rs in batch_data:
+                batch_size = actions.shape[0]
+                s = imgs.shape
+                states = imgs.reshape((s[0], -1, s[-2], s[-1]))  # batch x (f x C) x H x W
+                if PREPRO_STATE:
+                    last = states[:, 0, :, :]
+                    cur = states[:, 1, :, :]
+                    states = cur - last
+                    st = nd.array(states, ctx=self.ctx, dtype=np.float32)
+                else:
+                    st = nd.array(states, ctx=self.ctx, dtype=np.float32) / 255.0
 
-        loss.backward()
+                at = nd.array(actions[:, 0], ctx=self.ctx)
+                Rt = nd.array(Rs[:, 0], ctx=self.ctx)
+                labels = at.reshape(shape=(batch_size,))
+                logits = self.policy_net(st)
+                loss = self.loss_func(logits, labels)
+                loss = Rt * loss
 
-        if GRAD_CLIPPING_THETA is not None:
-            params = [p.data() for p in self.policy_net.collect_params().values()]
-            g_utils.grad_clipping(params, GRAD_CLIPPING_THETA, self.ctx)
+                loss_sum += nd.sum(nd.abs(loss)).asscalar()
+                step += batch_size
 
-        self.trainer.step(batch_size)
-        total_loss = loss.mean().asscalar()
-        return total_loss
+                final_nodes.append(loss)
+            autograd.backward(final_nodes)
+        self.trainer.step(step)
+
+        return loss_sum, step

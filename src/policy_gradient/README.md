@@ -13,6 +13,7 @@ policy gradient 算法虽然也接受环境信息（state），然是它输出�
 
 
 policy gradient 算法的流程：
+```angular2html
 1.先构建一个策略网络（policy network），输入每一帧游戏的画面，输出是各个动作的概率.
 2.for eposide in eposides do:
         用policy network_theta去玩一局游戏，收集游戏的数据：
@@ -22,4 +23,15 @@ policy gradient 算法的流程：
             theta = theta + alpha * gradient( (log p(at | st) * R(t))
         end for
   end for.
+
+```
+
+
+### 2018/09/18 version for pong
+1.使用minibatch的方式进行训练，效果不好。
+
+2.参考 [https://github.com/mrahtz/tensorflow-rl-pong]的游戏图片预处理方案和state输入方案
+
+3.大约在300 eposide 网络开始慢慢收敛
+600个eposide(2个多小时) 能打败gym bot
 

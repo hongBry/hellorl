@@ -1,7 +1,7 @@
 # Author: hong
 # Date  : 9/13/2018
 # Time  : 13:42 PM
-# FileName: reply_priority.py
+# FileName: replay_priority.py
 
 # copy from https://github.com/seekloud/hellorl/blob/master/src/dqn/replay_buffer.py
 # edit a little. (Prioritized Experience Replay)
